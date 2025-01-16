@@ -1,0 +1,32 @@
+[project]
+name = "injected-utils"
+version = "0.1.26a10"
+description = "Utility functions for pinjected stuff"
+authors = [
+    { name = "proboscis", email = "nameissoap@gmail.com" }
+]
+dependencies = [
+    "sqlitedict",
+    "loguru",
+    "filelock>=3.16.1",
+    "tqdm",
+    "returns",
+    "pinjected>=0.2.186",
+    "pandas>=2.2.3",
+]
+readme = "README.md"
+requires-python = ">= 3.10"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = []
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["injected_utils"]

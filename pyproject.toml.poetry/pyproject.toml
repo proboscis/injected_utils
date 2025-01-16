@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "injected-utils"
+version = "0.1.11"
+description = ""
+authors = ["Kento Masui <nameissoap@gmail.com>"]
+readme = "README.md"
+packages = [{include = "injected_utils"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+#notion-client = "^2.0.0"
+#notion-database = "^1.1.0"
+fuzzysearch = "^0.7.3"
+#pdfminer = "^20191125"
+pymupdf = "^1.22.5"
+chardet = "^5.1.0"
+pathos = "^0.3.0"
+bibtexparser = "^1.4.0"
+rpa = "^1.50.0"
+sqlitedict = "*"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
