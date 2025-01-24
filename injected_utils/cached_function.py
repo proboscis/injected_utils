@@ -102,10 +102,15 @@ class CachedFunction:
     lock: RLock = field(default_factory=RLock)
 
     def __post_init__(self):
+        sig = inspect.signature(self.func)
+        # funcの引数が*varargs（可変長引数）のみを持つことを確認
+        assert len(sig.parameters) == 1 and list(sig.parameters.values())[0].kind == inspect.Parameter.VAR_POSITIONAL, \
+            f"func must have only *args parameter, but got {sig}"
+            
         self.cache_type = type(self.cache)
         if self.protocol is None:
             self.protocol: IStringKeyProtocol = StringKeyProtocol(
-                inspect.signature(self.func),
+                sig,
                 serializer=pickle.dumps,
                 deserializer=pickle.loads
             )

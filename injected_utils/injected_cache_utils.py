@@ -308,62 +308,6 @@ def async_cached(cache: Injected[Dict],
     return impl
 
 
-T = TypeVar('T')
-U = TypeVar('U')
-
-
-def get_async_batch_cached(
-        cache: dict,
-        func: Callable[[list[T]], Awaitable[list[U]]],
-        hasher: Callable[[T], str]
-):
-    async def impl(items: list[T]) -> list[U]:
-        # 1. calc hash and gather the keys
-        key_to_item = {hasher(i): i for i in items}
-        # 2. check the cache
-        keys_to_calc = [k for k in key_to_item.keys() if k not in cache]
-        # 3. run the function
-        inputs = [key_to_item[k] for k in keys_to_calc]
-        results = await func(inputs)
-        # 4. cache the results
-        for k, r in zip(keys_to_calc, results):
-            cache[k] = r
-        # 5. return the results
-        return [cache[k] for k in key_to_item.keys()]
-
-    return impl
-
-
-@injected
-def async_batch_cached(
-        injected_utils_default_hasher,
-        /,
-        cache: dict,
-        hasher: Callable[[T], str] = None
-):
-    """
-    :param injected_utils_default_hasher: override this to change the default hasher.
-    :param cache: a cache implements dict interface.
-    :param hasher: You can provide a custom hasher here.
-    :return:
-    """
-    hasher = injected_utils_default_hasher if hasher is None else hasher
-    def get_impl(func: Callable[[list[T]], Awaitable[list[U]]]):
-        from functools import wraps
-        new_func = get_async_batch_cached(cache, func, hasher)
-        return wraps(func)(new_func)
-
-    return get_impl
-
-
-@async_batch_cached(cache=dict())
-@injected
-async def test_function_batch_cached(items: list[int]):
-    return [i * 2 for i in items]
-
-
-run_test_function_batch_cached: IProxy = test_function_batch_cached([1, 2, 3, 4, 5])
-
 
 @dataclass
 class PicklableSqliteDict:
