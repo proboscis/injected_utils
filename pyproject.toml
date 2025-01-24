@@ -1,6 +1,6 @@
 [project]
 name = "injected-utils"
-version = "0.1.26a11"
+version = "0.1.26a12"
 description = "Utility functions for pinjected stuff"
 authors = [
     { name = "proboscis", email = "nameissoap@gmail.com" }
@@ -30,3 +30,6 @@ allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["injected_utils"]
+
+[tool.ruff]
+ignore = ["F403", "F405", "F401"]
