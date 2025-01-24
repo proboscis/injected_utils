@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from hashlib import sha256
 from pathlib import Path
 from pprint import pformat
-from typing import Callable, Dict, ParamSpec, Any
+from typing import Callable, Dict, ParamSpec, Any, TypeVar, Awaitable
 
 import cloudpickle
 import filelock
@@ -28,6 +28,7 @@ from pinjected.di.util import get_code_location
 from pinjected.providable import Providable
 from pinjected.v2.resolver import AsyncResolver
 import pandas as pd
+from pinjected import *
 
 # from data_tree.util import Pickled
 
@@ -307,25 +308,61 @@ def async_cached(cache: Injected[Dict],
     return impl
 
 
-@injected
-def async_cached_v2(
-        cached_async,
-        /,
-        cache, *additional_key, en_async, value_invalidator):
-    def impl(async_func):
-        cached_async(
-            en_async=en_async,
-            cache=cache,
-            async_func=async_func,
-            additional_key=additional_key,
-            value_invalidator=value_invalidator
-        )
-        # but this doesnt let as update_if_registered, since this decoration happens runtime.
-        # so actually the design of this function is wrong.
-        # in this case, we can have a wrappper that does the registration.
-        # and add the decorator to this @injected.
+T = TypeVar('T')
+U = TypeVar('U')
+
+
+def get_async_batch_cached(
+        cache: dict,
+        func: Callable[[list[T]], Awaitable[list[U]]],
+        hasher: Callable[[T], str]
+):
+    async def impl(items: list[T]) -> list[U]:
+        # 1. calc hash and gather the keys
+        key_to_item = {hasher(i): i for i in items}
+        # 2. check the cache
+        keys_to_calc = [k for k in key_to_item.keys() if k not in cache]
+        # 3. run the function
+        inputs = [key_to_item[k] for k in keys_to_calc]
+        results = await func(inputs)
+        # 4. cache the results
+        for k, r in zip(keys_to_calc, results):
+            cache[k] = r
+        # 5. return the results
+        return [cache[k] for k in key_to_item.keys()]
 
     return impl
+
+
+@injected
+def async_batch_cached(
+        injected_utils_default_hasher,
+        /,
+        cache: dict,
+        hasher: Callable[[T], str] = None
+):
+    """
+    :param injected_utils_default_hasher: override this to change the default hasher.
+    :param cache: a cache implements dict interface.
+    :param hasher: You can provide a custom hasher here.
+    :return:
+    """
+    hasher = injected_utils_default_hasher if hasher is None else hasher
+    def get_impl(func: Callable[[list[T]], Awaitable[list[U]]]):
+        from functools import wraps
+        new_func = get_async_batch_cached(cache, func, hasher)
+        return wraps(func)(new_func)
+
+    return get_impl
+
+
+@async_batch_cached(cache=dict())
+@injected
+async def test_function_batch_cached(items: list[int]):
+    return [i * 2 for i in items]
+
+
+run_test_function_batch_cached: IProxy = test_function_batch_cached([1, 2, 3, 4, 5])
 
 
 @dataclass
@@ -668,3 +705,9 @@ def parse_preference_assignments(res: dict):
     :param res:
     :return:
     """
+
+__meta_design__ = design(
+    overrides=design(
+        injected_utils_default_hasher=lambda item: sha256(jsonpickle.dumps(item).encode()).hexdigest()
+    )
+)
