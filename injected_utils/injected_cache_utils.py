@@ -252,12 +252,54 @@ class HasherKeyEncoder(IKeyEncoder):
 
 
 def async_cached(cache: Injected[Dict],
-                 *additional_key: Injected,
-                 en_async=None,
-                 value_invalidator=None,
-                 hasher_factory: Injected[HasherFactory] = None,
-                 key_hashers: Injected[dict[str, callable]] = None,
-                 ):
+                  *additional_key: Injected,
+                  en_async=None,
+                  value_invalidator=None,
+                  hasher_factory: Injected[HasherFactory] = None,
+                  key_hashers: Injected[dict[str, callable]] = None,
+                  ):
+    """
+    非同期関数の結果をキャッシュするためのデコレータファクトリです。
+
+    このデコレータは、非同期関数の結果をキャッシュし、同じ入力に対する再計算を避けることで
+    パフォーマンスを最適化します。キャッシュキーの生成方法をカスタマイズでき、
+    値の無効化条件も指定できます。
+
+    Parameters
+    ----------
+    cache : Injected[Dict]
+        キャッシュストアとして使用する辞書オブジェクト
+    *additional_key : Injected
+        キャッシュキーに追加で含める値。複数指定可能
+    en_async : Optional
+        非同期実行の制御オプション。デフォルトはNone
+    value_invalidator : Optional[Callable]
+        キャッシュ値を無効化するための関数。デフォルトはNone
+    hasher_factory : Optional[Injected[HasherFactory]]
+        キャッシュキーの生成方法をカスタマイズするファクトリ関数
+    key_hashers : Optional[Injected[dict[str, callable]]]
+        引数名ごとにハッシュ関数を指定する辞書
+
+    Returns
+    -------
+    Callable
+        非同期関数をデコレートする関数
+
+    Example
+    -------
+    ```python
+    @async_cached(my_cache, version_key)
+    @injected
+    async def fetch_data(client, /, user_id: str):
+        return await client.get_user_data(user_id)
+    ```
+
+    Notes
+    -----
+    - デコレートされた関数の引数は全てキャッシュキーの一部として使用されます
+    - hasher_factoryとkey_hashersは排他的で、両方同時には使用できません
+    - キャッシュキーはデフォルトでJSONPickleでシリアライズされSHA-256ハッシュ化されます
+    """
     additional_key = Injected.mzip(*[ensure_injected(i) for i in additional_key])
     parent_frame = inspect.currentframe().f_back
 
