@@ -1,6 +1,6 @@
 [project]
 name = "injected-utils"
-version = "0.1.26a15"
+version = "0.1.26a16"
 description = "Utility functions for pinjected stuff"
 authors = [
     { name = "proboscis", email = "nameissoap@gmail.com" }
