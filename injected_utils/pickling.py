@@ -168,4 +168,4 @@ def pickled(cache_path, injected: Injected):
 
         return await AsyncPickled(cache_path, __impl).value
 
-    return Injected.bind(_impl).add_dynamic_dependencies(*injected.complete_dependencies)
+    return Injected.bind(_impl).add_dynamic_dependencies(*injected.complete_dependencies).proxy
