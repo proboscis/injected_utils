@@ -1,6 +1,6 @@
 [project]
 name = "injected-utils"
-version = "0.1.26a16"
+version = "0.1.28"
 description = "Utility functions for pinjected stuff"
 authors = [
     { name = "proboscis", email = "nameissoap@gmail.com" }
@@ -18,7 +18,7 @@ readme = "README.md"
 requires-python = ">= 3.10"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling==1.26.3"]  # Without a version spec, hatchling==1.27.0 is used which fails to publish
 build-backend = "hatchling.build"
 
 [tool.rye]
