@@ -30,7 +30,7 @@ import pandas as pd
 from pinjected import *
 
 try:
-    from pinjeted import AsyncResolver
+    from pinjected import AsyncResolver
 except ImportError:
     from pinjected.v2.resolver import AsyncResolver
 
