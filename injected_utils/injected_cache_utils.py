@@ -26,9 +26,14 @@ from pinjected.decoration import update_if_registered
 from pinjected.di.proxiable import DelegatedVar
 from pinjected.di.util import get_code_location
 from pinjected.providable import Providable
-from pinjected.v2.resolver import AsyncResolver
 import pandas as pd
 from pinjected import *
+
+try:
+    from pinjeted import AsyncResolver
+except ImportError:
+    from pinjected.v2.resolver import AsyncResolver
+
 
 # from data_tree.util import Pickled
 

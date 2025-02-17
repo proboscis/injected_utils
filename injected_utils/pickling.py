@@ -12,8 +12,12 @@ import cloudpickle
 from filelock import FileLock
 from loguru import logger
 from pinjected import Injected
-from pinjected.v2.resolver import AsyncResolver
 from pinjected.compatibility.task_group import TaskGroup
+
+try:
+    from pinjected.v2.resolver import AsyncResolver
+except ImportError:
+    from pinjected import AsyncResolver
 
 
 @dataclass
