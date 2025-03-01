@@ -1,3 +1,4 @@
+import asyncio
 from hashlib import sha256
 from typing import TypeVar, Callable, Awaitable
 import inspect
@@ -72,12 +73,15 @@ def _async_batch_cached(
                 for k, r in zip(keys_to_calc, results):
                     cache[k] = r
             # 5. すべての結果を返す（キャッシュ + 新規計算）
-            return [cache[k] for k in key_to_item.keys()]
+            res = await asyncio.gather(
+                *[asyncio.get_event_loop().run_in_executor(None, cache.__getitem__,k) for k in key_to_item.keys()]
+            )
+            return list(res)
+
 
         return impl
 
     return get_impl
-
 
 def async_batch_cached(cache: IProxy[dict], hasher: Callable[[T], str] = None):
     """

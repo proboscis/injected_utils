@@ -56,10 +56,10 @@ class CompressedPklSqliteDict:
 def compress__lzma(logger, /, data: bytes):
     import lzma
     src_mb = len(data) / 1024 / 1024
-    logger.info(f"Compressing {src_mb} MB")
+    #logger.info(f"Compressing {src_mb} MB")
     res = lzma.compress(data)
     res_mb = len(res) / 1024 / 1024
-    logger.info(f"Compressed: {src_mb} MB -> {res_mb} MB")
+    #logger.info(f"Compressed: {src_mb} MB -> {res_mb} MB")
     return res
 
 
